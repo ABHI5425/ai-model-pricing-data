@@ -1,26 +1,29 @@
-[
-  {
-    "provider": "OpenAI",
-    "model": "GPT-4o",
-    "inputPricePer1K": 0.005,
-    "outputPricePer1K": 0.015
-  },
-  {
-    "provider": "Anthropic",
-    "model": "Claude 3 Opus",
-    "inputPricePer1K": 0.015,
-    "outputPricePer1K": 0.075
-  },
-  {
-    "provider": "Google",
-    "model": "Gemini 1.5 Pro",
-    "inputPricePer1K": 0.003,
-    "outputPricePer1K": 0.015
-  },
-  {
-    "provider": "DeepSeek",
-    "model": "DeepSeek-V2",
-    "inputPricePer1K": 0.0002,
-    "outputPricePer1K": 0.0002
-  }
-]
+{
+  "models": [
+    {
+      "name": "ChatGPT (GPT-4 Turbo)",
+      "tokens_per_word": 1.33,
+      "cost_per_1k_tokens": 0.01
+    },
+    {
+      "name": "Claude 3 Sonnet",
+      "tokens_per_word": 1.5,
+      "cost_per_1k_tokens": 0.003
+    },
+    {
+      "name": "Gemini 1.5 Pro",
+      "tokens_per_word": 1.25,
+      "cost_per_1k_tokens": 0.002
+    },
+    {
+      "name": "DeepSeek-V2",
+      "tokens_per_word": 1.4,
+      "cost_per_1k_tokens": 0.0005
+    },
+    {
+      "name": "Grok-1",
+      "tokens_per_word": 1.3,
+      "cost_per_1k_tokens": 0.0025
+    }
+  ]
+}
