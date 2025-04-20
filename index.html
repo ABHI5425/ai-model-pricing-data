@@ -3,196 +3,195 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AI Token Cost Estimator</title>
+  <title>AI Model Token Estimator</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: #f6f9fc;
-      padding: 2rem;
+      margin: 0;
+      background: #f7f9fc;
       color: #333;
-      transition: all 0.3s ease;
+      padding: 2rem;
     }
-
     h1 {
       font-size: 2rem;
       margin-bottom: 1rem;
-      color: #0a2540;
+      color: #1a1a1a;
     }
-
+    .container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
     textarea {
       width: 100%;
-      height: 100px;
+      min-height: 150px;
       padding: 1rem;
-      font-size: 1rem;
       border-radius: 12px;
       border: 1px solid #ccc;
-      resize: vertical;
+      font-size: 1rem;
       box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      transition: all 0.3s ease;
     }
-
-    button {
-      padding: 0.5rem 1.5rem;
+    select, button {
       margin-top: 1rem;
-      margin-right: 0.5rem;
-      background: #0a2540;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+    }
+    button {
+      background-color: #007bff;
       color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.3s ease;
+      transition: all 0.2s ease;
     }
-
     button:hover {
-      background: #1b3d6d;
+      background-color: #0056b3;
     }
-
-    select {
-      margin-left: 10px;
-      padding: 0.5rem;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-    }
-
-    .copy-btn {
-      position: absolute;
-      right: 16px;
-      top: 16px;
-      background: #e0e0e0;
-      border: none;
-      padding: 0.3rem 0.8rem;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
     table {
       width: 100%;
-      margin-top: 2rem;
+      margin-top: 1rem;
       border-collapse: collapse;
-      background: white;
       border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-      transition: all 0.3s ease;
+      animation: fadeIn 0.8s ease-in-out;
     }
-
     th, td {
-      padding: 1rem;
-      text-align: left;
-      border-bottom: 1px solid #eee;
+      border: 1px solid #e1e1e1;
+      padding: 0.75rem;
+      text-align: center;
     }
-
     th {
-      background: #f0f4f8;
-      color: #333;
+      background-color: #f1f1f1;
     }
-
-    .fade {
-      animation: fadeIn 0.6s ease-in-out forwards;
+    .copy-btn {
+      margin-left: 10px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      background: #eee;
+      cursor: pointer;
     }
-
+    .copy-btn:hover {
+      background: #ddd;
+    }
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
+      from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
-
     .disclaimer {
-      margin-top: 1rem;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       color: #666;
-      font-style: italic;
-    }
-
-    .input-container {
-      position: relative;
-      margin-bottom: 1rem;
+      margin-top: 0.5rem;
     }
   </style>
 </head>
 <body>
-
-  <h1>AI Token Pricing Estimator</h1>
-
-  <div class="input-container">
-    <textarea id="userInput" placeholder="Enter your text here..."></textarea>
-    <button class="copy-btn" onclick="copyText()">Copy</button>
+  <h1>AI Model Cost Estimator</h1>
+  <div class="container">
+    <div>
+      <textarea id="userInput" placeholder="Enter your prompt here..."></textarea>
+      <button class="copy-btn" onclick="copyText()">Copy</button>
+      <div>
+        <select id="outputType">
+          <option value="short">Short (e.g. TL;DR)</option>
+          <option value="medium" selected>Medium (e.g. Explain briefly)</option>
+          <option value="long">Long (e.g. Essay/Code)</option>
+        </select>
+      </div>
+      <button onclick="estimateCosts()">Estimate Cost</button>
+      <p class="disclaimer">*Output token count is an approximation. Total cost = (Input + Output) tokens × model price.</p>
+    </div>
+    <div id="pricingTableContainer">
+      <h2>Model Pricing</h2>
+      <div id="pricingTable">Loading pricing table...</div>
+    </div>
   </div>
-
-  <label for="outputType">Expected Output Type:</label>
-  <select id="outputType">
-    <option value="100">Short (100 tokens)</option>
-    <option value="300">Medium (300 tokens)</option>
-    <option value="700">Long (700 tokens)</option>
-    <option value="500">Code Output (500 tokens)</option>
-  </select>
-
-  <button onclick="analyze()">Estimate Cost</button>
-
-  <div class="disclaimer">
-    * Output cost is estimated based on your selected output type. Actual output may vary depending on the model response.
-  </div>
-
-  <table class="fade" id="resultsTable">
-    <thead>
-      <tr>
-        <th>Model</th>
-        <th>Input Tokens</th>
-        <th>Input ₹</th>
-        <th>Output Tokens</th>
-        <th>Output ₹</th>
-        <th>Total ₹</th>
-      </tr>
-    </thead>
-    <tbody id="resultsBody"></tbody>
-  </table>
 
   <script>
-    const usdToInr = 83;
-    const pricing = {
-      "GPT-4 Turbo": 0.01 / 1000,
-      "Claude 3 Opus": 0.015 / 1000,
-      "Gemini 1.5 Pro": 0.007 / 1000,
-      "Grok (approx)": 0.012 / 1000,
-      "DeepSeek-V2": 0.003 / 1000
+    const outputTypeTokens = {
+      short: 100,
+      medium: 500,
+      long: 1000
     };
 
-    function estimateTokens(text) {
-      const words = text.trim().split(/\s+/).length;
-      return Math.ceil(words * 0.75); // Approx 0.75 tokens per word
-    }
-
-    function analyze() {
-      const text = document.getElementById("userInput").value;
-      const outputTokens = parseInt(document.getElementById("outputType").value);
-      const inputTokens = estimateTokens(text);
-      const results = document.getElementById("resultsBody");
-      results.innerHTML = "";
-
-      for (const model in pricing) {
-        const costPerToken = pricing[model];
-        const inputCostUSD = inputTokens * costPerToken;
-        const outputCostUSD = outputTokens * costPerToken;
-        const totalUSD = inputCostUSD + outputCostUSD;
-        const totalINR = totalUSD * usdToInr;
-
-        results.innerHTML += `
-          <tr class="fade">
-            <td>${model}</td>
-            <td>${inputTokens}</td>
-            <td>₹${(inputCostUSD * usdToInr).toFixed(2)}</td>
-            <td>${outputTokens}</td>
-            <td>₹${(outputCostUSD * usdToInr).toFixed(2)}</td>
-            <td><strong>₹${totalINR.toFixed(2)}</strong></td>
-          </tr>`;
+    async function loadPricing() {
+      try {
+        const res = await fetch("model-pricing.json");
+        const models = await res.json();
+        renderTable(models);
+      } catch (err) {
+        document.getElementById("pricingTable").innerText = "Failed to load pricing.";
+        console.error("Error loading JSON:", err);
       }
     }
 
-    function copyText() {
-      const input = document.getElementById("userInput");
-      navigator.clipboard.writeText(input.value).then(() => {
-        alert("Text copied to clipboard!");
-      });
+    function estimateCosts() {
+      const text = document.getElementById("userInput").value;
+      const wordCount = text.trim().split(/\s+/).length;
+      const charCount = text.length;
+      const tokensInput = Math.ceil(charCount / 4);
+      const outputSelection = document.getElementById("outputType").value;
+      const outputTokens = outputTypeTokens[outputSelection] || 500;
+      const totalTokens = tokensInput + outputTokens;
+
+      fetch("model-pricing.json")
+        .then(res => res.json())
+        .then(models => {
+          const updatedModels = models.map(model => {
+            const cost = (totalTokens / model.tokenPerUnit) * model.pricePerUnit;
+            return {
+              ...model,
+              inputTokens: tokensInput,
+              outputTokens: outputTokens,
+              totalTokens,
+              costUSD: cost.toFixed(4),
+              costINR: (cost * 83).toFixed(2)
+            };
+          });
+          renderTable(updatedModels);
+        });
     }
+
+    function renderTable(models) {
+      const tableHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>Price per 1K Tokens ($)</th>
+              <th>Input Tokens</th>
+              <th>Output Tokens</th>
+              <th>Total Tokens</th>
+              <th>Cost ($)</th>
+              <th>Cost (₹)</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${models.map(m => `
+              <tr>
+                <td>${m.name}</td>
+                <td>${m.pricePerUnit}</td>
+                <td>${m.inputTokens || "-"}</td>
+                <td>${m.outputTokens || "-"}</td>
+                <td>${m.totalTokens || "-"}</td>
+                <td>${m.costUSD || "-"}</td>
+                <td>${m.costINR || "-"}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      `;
+      document.getElementById("pricingTable").innerHTML = tableHTML;
+    }
+
+    function copyText() {
+      const textarea = document.getElementById("userInput");
+      navigator.clipboard.writeText(textarea.value)
+        .then(() => alert("Copied to clipboard!"))
+        .catch(err => console.error("Failed to copy text:", err));
+    }
+
+    // Load default table on load
+    window.onload = loadPricing;
   </script>
 </body>
 </html>
