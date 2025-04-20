@@ -1,179 +1,239 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Model Pricing</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f9;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .container {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            width: 80%;
-            max-width: 1200px;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .input-section {
-            width: 60%;
-            padding: 20px;
-            background-color: #e0f7fa;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .output-section {
-            width: 35%;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        h2 {
-            color: #00796b;
-        }
-        button {
-            padding: 10px 15px;
-            font-size: 14px;
-            background-color: #00796b;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #004d40;
-        }
-        table {
-            width: 100%;
-            margin-top: 20px;
-            border-collapse: collapse;
-        }
-        table, th, td {
-            border: 1px solid #00796b;
-        }
-        th, td {
-            padding: 10px;
-            text-align: left;
-        }
-        .copy-button {
-            margin-left: 10px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Word Count & Pricing Estimator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+  body {
+    margin: 0;
+    padding: 40px;
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(to right, #f7f8fc, #e8ecf5);
+    color: #1f1f1f;
+    display: flex;
+    flex-direction: row;
+    gap: 40px;
+    overflow-x: hidden;
+  }
+
+  .container {
+    display: flex;
+    flex-direction: row;
+    gap: 40px;
+    width: 100%;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeSlideIn 0.8s ease-out forwards;
+  }
+
+  @keyframes fadeSlideIn {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .card {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    border-radius: 16px;
+    padding: 24px;
+    flex: 1;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  }
+
+  h2 {
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+
+  textarea {
+    width: 100%;
+    height: 160px;
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    resize: vertical;
+    margin-bottom: 8px;
+    transition: border 0.3s;
+  }
+
+  textarea:focus {
+    border-color: #666;
+    outline: none;
+  }
+
+  button.copy-btn {
+    margin-top: 8px;
+    background: #1f1f1f;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.3s, transform 0.2s;
+  }
+
+  button.copy-btn:hover {
+    background: #333;
+    transform: translateY(-2px);
+  }
+
+  .output p,
+  .output h3 {
+    margin: 10px 0;
+    font-size: 16px;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: slideUpFade 0.5s ease-out forwards;
+  }
+
+  @keyframes slideUpFade {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+    animation: slideUpFade 0.6s ease-out forwards;
+  }
+
+  th, td {
+    padding: 10px;
+    border: 1px solid #e3e3e3;
+    text-align: left;
+    font-size: 15px;
+  }
+
+  th {
+    background-color: #f1f4f9;
+    font-weight: 600;
+  }
+</style>
+
 </head>
 <body>
-
-<div class="container">
-    <div class="input-section">
-        <h2>Enter Text for Word Count</h2>
-        <textarea id="inputText" rows="6" cols="40" placeholder="Enter your text here"></textarea>
-        <button id="copyButton" class="copy-button">Copy Text</button>
-        <button id="countWordsButton">Count Words</button>
-        <div id="wordCountResult"></div>
-    </div>
-
-    <div class="output-section">
-        <h2>AI Model Pricing</h2>
-        <table id="pricingTable">
-            <thead>
-                <tr>
-                    <th>Model</th>
-                    <th>Price per 1k Tokens (USD)</th>
-                    <th>Price per 1k Tokens (INR)</th>
-                    <th>Total Input Cost (USD)</th>
-                    <th>Total Input Cost (INR)</th>
-                    <th>Total Output Cost (USD)</th>
-                    <th>Total Output Cost (INR)</th>
-                    <th>Total Cost (USD)</th>
-                    <th>Total Cost (INR)</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Data will be dynamically inserted here -->
-            </tbody>
+  <div class="container">
+    <!-- Left Side -->
+    <div class="card">
+      <h2>📝 Prompt & Estimator</h2>
+      <textarea id="textInput" placeholder="Paste your prompt here..."></textarea>
+      <button class="copy-btn" onclick="copyText()">Copy</button>
+      <div class="output">
+        <p><strong>Word Count:</strong> <span id="wordCount">0</span></p>
+      </div>
+      <div class="output">
+        <h3>💵 Estimated API Costs</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>Tokens</th>
+              <th>Cost (USD)</th>
+              <th>Cost (INR)</th>
+            </tr>
+          </thead>
+          <tbody id="cost-estimates">
+            <!-- Filled dynamically -->
+          </tbody>
         </table>
+      </div>
     </div>
-</div>
 
-<script>
-    // Fetch pricing data from GitHub Pages (use absolute URL to avoid path issues)
-    fetch("https://abhi5425.github.io/ai-model-pricing-data/model-pricing.json")
-        .then(response => response.json())
-        .then(data => {
-            const pricingTable = document.getElementById('pricingTable').getElementsByTagName('tbody')[0];
-            data.forEach(model => {
-                const row = pricingTable.insertRow();
-                row.innerHTML = `
-                    <td>${model.model}</td>
-                    <td>${model.priceUSD}</td>
-                    <td>${model.priceINR}</td>
-                    <td id="inputCost_${model.model}"></td>
-                    <td id="inputCostINR_${model.model}"></td>
-                    <td id="outputCost_${model.model}"></td>
-                    <td id="outputCostINR_${model.model}"></td>
-                    <td id="totalCost_${model.model}"></td>
-                    <td id="totalCostINR_${model.model}"></td>
-                `;
-            });
-        })
-        .catch(error => console.error("Error fetching pricing data:", error));
+    <!-- Right Side -->
+    <div class="card">
+      <h2>📊 Model Pricing (Live JSON)</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>Tokens/Word</th>
+            <th>$/1K Tokens</th>
+            <th>₹/1K Tokens</th>
+          </tr>
+        </thead>
+        <tbody id="pricing-table-body">
+          <!-- Filled dynamically -->
+        </tbody>
+      </table>
+    </div>
+  </div>
 
-    // Word count logic and copy button functionality
-    document.getElementById('countWordsButton').addEventListener('click', function() {
-        const inputText = document.getElementById('inputText').value;
-        const wordCount = inputText.split(/\s+/).filter(Boolean).length;
-        document.getElementById('wordCountResult').innerText = `Word count: ${wordCount}`;
-        
-        // Calculate the input cost for each model dynamically based on word count and model pricing
-        fetch("https://abhi5425.github.io/ai-model-pricing-data/model-pricing.json")
-            .then(response => response.json())
-            .then(data => {
-                data.forEach(model => {
-                    const inputTokens = Math.ceil(wordCount / 0.75);  // Approx 1 token = 0.75 words
-                    const inputCostUSD = (inputTokens / 1000) * model.priceUSD;
-                    const inputCostINR = inputCostUSD * 82;  // Conversion rate of 1 USD to INR = 82
+  <script>
+    let pricingData = [];
 
-                    document.getElementById(`inputCost_${model.model}`).innerText = inputCostUSD.toFixed(4);
-                    document.getElementById(`inputCostINR_${model.model}`).innerText = inputCostINR.toFixed(2);
-
-                    // For output cost, assuming output is approx 1.2x input tokens (approximation)
-                    const outputTokens = Math.ceil(inputTokens * 1.2);
-                    const outputCostUSD = (outputTokens / 1000) * model.priceUSD;
-                    const outputCostINR = outputCostUSD * 82;
-
-                    document.getElementById(`outputCost_${model.model}`).innerText = outputCostUSD.toFixed(4);
-                    document.getElementById(`outputCostINR_${model.model}`).innerText = outputCostINR.toFixed(2);
-
-                    // Total cost = input + output
-                    const totalCostUSD = inputCostUSD + outputCostUSD;
-                    const totalCostINR = inputCostINR + outputCostINR;
-
-                    document.getElementById(`totalCost_${model.model}`).innerText = totalCostUSD.toFixed(4);
-                    document.getElementById(`totalCostINR_${model.model}`).innerText = totalCostINR.toFixed(2);
-                });
-            })
-            .catch(error => console.error("Error fetching pricing data:", error));
+    document.getElementById("textInput").addEventListener("input", () => {
+      const text = document.getElementById("textInput").value.trim();
+      const words = text.split(/\s+/).filter(Boolean);
+      const wordCount = words.length;
+      document.getElementById("wordCount").innerText = wordCount;
+      updateCostEstimates(wordCount);
     });
 
-    // Copy the text from the input box to clipboard
-    document.getElementById('copyButton').addEventListener('click', function() {
-        const inputText = document.getElementById('inputText');
-        inputText.select();
-        document.execCommand('copy');
-        alert("Text copied to clipboard!");
-    });
-</script>
+    async function loadModelPricing() {
+      try {
+        const res = await fetch("model-pricing.json");
+        const data = await res.json();
+        pricingData = data.models || [];
 
+        const tableBody = document.getElementById("pricing-table-body");
+
+        pricingData.forEach(model => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${model.name}</td>
+            <td>${model.tokens_per_word}</td>
+            <td>$${model.cost_per_1k_tokens}</td>
+            <td>₹${(model.cost_per_1k_tokens * 83).toFixed(2)}</td>
+          `;
+          tableBody.appendChild(row);
+        });
+      } catch (err) {
+        console.error("Failed to load pricing data:", err);
+      }
+    }
+
+    function updateCostEstimates(wordCount) {
+      const tbody = document.getElementById("cost-estimates");
+      tbody.innerHTML = "";
+
+      pricingData.forEach(model => {
+        const tokenCount = (wordCount * model.tokens_per_word).toFixed(2);
+        const usd = ((tokenCount / 1000) * model.cost_per_1k_tokens).toFixed(4);
+        const inr = (usd * 83).toFixed(2);
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${model.name}</td>
+          <td>${tokenCount}</td>
+          <td>$${usd}</td>
+          <td>₹${inr}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function copyText() {
+      const textArea = document.getElementById("textInput");
+      textArea.select();
+      document.execCommand("copy");
+    }
+
+    loadModelPricing();
+  </script>
 </body>
 </html>
