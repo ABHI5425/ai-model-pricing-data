@@ -1,0 +1,26 @@
+[
+  {
+    "provider": "OpenAI",
+    "model": "GPT-4o",
+    "inputPricePer1K": 0.005,
+    "outputPricePer1K": 0.015
+  },
+  {
+    "provider": "Anthropic",
+    "model": "Claude 3 Opus",
+    "inputPricePer1K": 0.015,
+    "outputPricePer1K": 0.075
+  },
+  {
+    "provider": "Google",
+    "model": "Gemini 1.5 Pro",
+    "inputPricePer1K": 0.003,
+    "outputPricePer1K": 0.015
+  },
+  {
+    "provider": "DeepSeek",
+    "model": "DeepSeek-V2",
+    "inputPricePer1K": 0.0002,
+    "outputPricePer1K": 0.0002
+  }
+]
