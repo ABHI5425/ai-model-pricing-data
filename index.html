@@ -1,197 +1,179 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AI Model Token Estimator</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      background: #f7f9fc;
-      color: #333;
-      padding: 2rem;
-    }
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-      color: #1a1a1a;
-    }
-    .container {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 2rem;
-      align-items: start;
-    }
-    textarea {
-      width: 100%;
-      min-height: 150px;
-      padding: 1rem;
-      border-radius: 12px;
-      border: 1px solid #ccc;
-      font-size: 1rem;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
-    select, button {
-      margin-top: 1rem;
-      padding: 0.75rem 1rem;
-      font-size: 1rem;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-    }
-    button {
-      background-color: #007bff;
-      color: white;
-      transition: all 0.2s ease;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
-    table {
-      width: 100%;
-      margin-top: 1rem;
-      border-collapse: collapse;
-      border-radius: 12px;
-      overflow: hidden;
-      animation: fadeIn 0.8s ease-in-out;
-    }
-    th, td {
-      border: 1px solid #e1e1e1;
-      padding: 0.75rem;
-      text-align: center;
-    }
-    th {
-      background-color: #f1f1f1;
-    }
-    .copy-btn {
-      margin-left: 10px;
-      padding: 6px 12px;
-      border-radius: 6px;
-      background: #eee;
-      cursor: pointer;
-    }
-    .copy-btn:hover {
-      background: #ddd;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .disclaimer {
-      font-size: 0.85rem;
-      color: #666;
-      margin-top: 0.5rem;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Model Pricing</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            width: 80%;
+            max-width: 1200px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .input-section {
+            width: 60%;
+            padding: 20px;
+            background-color: #e0f7fa;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .output-section {
+            width: 35%;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #00796b;
+        }
+        button {
+            padding: 10px 15px;
+            font-size: 14px;
+            background-color: #00796b;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #004d40;
+        }
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid #00796b;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        .copy-button {
+            margin-left: 10px;
+        }
+    </style>
 </head>
 <body>
-  <h1>AI Model Cost Estimator</h1>
-  <div class="container">
-    <div>
-      <textarea id="userInput" placeholder="Enter your prompt here..."></textarea>
-      <button class="copy-btn" onclick="copyText()">Copy</button>
-      <div>
-        <select id="outputType">
-          <option value="short">Short (e.g. TL;DR)</option>
-          <option value="medium" selected>Medium (e.g. Explain briefly)</option>
-          <option value="long">Long (e.g. Essay/Code)</option>
-        </select>
-      </div>
-      <button onclick="estimateCosts()">Estimate Cost</button>
-      <p class="disclaimer">*Output token count is an approximation. Total cost = (Input + Output) tokens × model price.</p>
+
+<div class="container">
+    <div class="input-section">
+        <h2>Enter Text for Word Count</h2>
+        <textarea id="inputText" rows="6" cols="40" placeholder="Enter your text here"></textarea>
+        <button id="copyButton" class="copy-button">Copy Text</button>
+        <button id="countWordsButton">Count Words</button>
+        <div id="wordCountResult"></div>
     </div>
-    <div id="pricingTableContainer">
-      <h2>Model Pricing</h2>
-      <div id="pricingTable">Loading pricing table...</div>
-    </div>
-  </div>
 
-  <script>
-    const outputTypeTokens = {
-      short: 100,
-      medium: 500,
-      long: 1000
-    };
-
-    async function loadPricing() {
-      try {
-        const res = await fetch("model-pricing.json");
-        const models = await res.json();
-        renderTable(models);
-      } catch (err) {
-        document.getElementById("pricingTable").innerText = "Failed to load pricing.";
-        console.error("Error loading JSON:", err);
-      }
-    }
-
-    function estimateCosts() {
-      const text = document.getElementById("userInput").value;
-      const wordCount = text.trim().split(/\s+/).length;
-      const charCount = text.length;
-      const tokensInput = Math.ceil(charCount / 4);
-      const outputSelection = document.getElementById("outputType").value;
-      const outputTokens = outputTypeTokens[outputSelection] || 500;
-      const totalTokens = tokensInput + outputTokens;
-
-      fetch("model-pricing.json")
-        .then(res => res.json())
-        .then(models => {
-          const updatedModels = models.map(model => {
-            const cost = (totalTokens / model.tokenPerUnit) * model.pricePerUnit;
-            return {
-              ...model,
-              inputTokens: tokensInput,
-              outputTokens: outputTokens,
-              totalTokens,
-              costUSD: cost.toFixed(4),
-              costINR: (cost * 83).toFixed(2)
-            };
-          });
-          renderTable(updatedModels);
-        });
-    }
-
-    function renderTable(models) {
-      const tableHTML = `
-        <table>
-          <thead>
-            <tr>
-              <th>Model</th>
-              <th>Price per 1K Tokens ($)</th>
-              <th>Input Tokens</th>
-              <th>Output Tokens</th>
-              <th>Total Tokens</th>
-              <th>Cost ($)</th>
-              <th>Cost (₹)</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${models.map(m => `
-              <tr>
-                <td>${m.name}</td>
-                <td>${m.pricePerUnit}</td>
-                <td>${m.inputTokens || "-"}</td>
-                <td>${m.outputTokens || "-"}</td>
-                <td>${m.totalTokens || "-"}</td>
-                <td>${m.costUSD || "-"}</td>
-                <td>${m.costINR || "-"}</td>
-              </tr>`).join('')}
-          </tbody>
+    <div class="output-section">
+        <h2>AI Model Pricing</h2>
+        <table id="pricingTable">
+            <thead>
+                <tr>
+                    <th>Model</th>
+                    <th>Price per 1k Tokens (USD)</th>
+                    <th>Price per 1k Tokens (INR)</th>
+                    <th>Total Input Cost (USD)</th>
+                    <th>Total Input Cost (INR)</th>
+                    <th>Total Output Cost (USD)</th>
+                    <th>Total Output Cost (INR)</th>
+                    <th>Total Cost (USD)</th>
+                    <th>Total Cost (INR)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data will be dynamically inserted here -->
+            </tbody>
         </table>
-      `;
-      document.getElementById("pricingTable").innerHTML = tableHTML;
-    }
+    </div>
+</div>
 
-    function copyText() {
-      const textarea = document.getElementById("userInput");
-      navigator.clipboard.writeText(textarea.value)
-        .then(() => alert("Copied to clipboard!"))
-        .catch(err => console.error("Failed to copy text:", err));
-    }
+<script>
+    // Fetch pricing data from GitHub Pages (use absolute URL to avoid path issues)
+    fetch("https://abhi5425.github.io/ai-model-pricing-data/model-pricing.json")
+        .then(response => response.json())
+        .then(data => {
+            const pricingTable = document.getElementById('pricingTable').getElementsByTagName('tbody')[0];
+            data.forEach(model => {
+                const row = pricingTable.insertRow();
+                row.innerHTML = `
+                    <td>${model.model}</td>
+                    <td>${model.priceUSD}</td>
+                    <td>${model.priceINR}</td>
+                    <td id="inputCost_${model.model}"></td>
+                    <td id="inputCostINR_${model.model}"></td>
+                    <td id="outputCost_${model.model}"></td>
+                    <td id="outputCostINR_${model.model}"></td>
+                    <td id="totalCost_${model.model}"></td>
+                    <td id="totalCostINR_${model.model}"></td>
+                `;
+            });
+        })
+        .catch(error => console.error("Error fetching pricing data:", error));
 
-    // Load default table on load
-    window.onload = loadPricing;
-  </script>
+    // Word count logic and copy button functionality
+    document.getElementById('countWordsButton').addEventListener('click', function() {
+        const inputText = document.getElementById('inputText').value;
+        const wordCount = inputText.split(/\s+/).filter(Boolean).length;
+        document.getElementById('wordCountResult').innerText = `Word count: ${wordCount}`;
+        
+        // Calculate the input cost for each model dynamically based on word count and model pricing
+        fetch("https://abhi5425.github.io/ai-model-pricing-data/model-pricing.json")
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(model => {
+                    const inputTokens = Math.ceil(wordCount / 0.75);  // Approx 1 token = 0.75 words
+                    const inputCostUSD = (inputTokens / 1000) * model.priceUSD;
+                    const inputCostINR = inputCostUSD * 82;  // Conversion rate of 1 USD to INR = 82
+
+                    document.getElementById(`inputCost_${model.model}`).innerText = inputCostUSD.toFixed(4);
+                    document.getElementById(`inputCostINR_${model.model}`).innerText = inputCostINR.toFixed(2);
+
+                    // For output cost, assuming output is approx 1.2x input tokens (approximation)
+                    const outputTokens = Math.ceil(inputTokens * 1.2);
+                    const outputCostUSD = (outputTokens / 1000) * model.priceUSD;
+                    const outputCostINR = outputCostUSD * 82;
+
+                    document.getElementById(`outputCost_${model.model}`).innerText = outputCostUSD.toFixed(4);
+                    document.getElementById(`outputCostINR_${model.model}`).innerText = outputCostINR.toFixed(2);
+
+                    // Total cost = input + output
+                    const totalCostUSD = inputCostUSD + outputCostUSD;
+                    const totalCostINR = inputCostINR + outputCostINR;
+
+                    document.getElementById(`totalCost_${model.model}`).innerText = totalCostUSD.toFixed(4);
+                    document.getElementById(`totalCostINR_${model.model}`).innerText = totalCostINR.toFixed(2);
+                });
+            })
+            .catch(error => console.error("Error fetching pricing data:", error));
+    });
+
+    // Copy the text from the input box to clipboard
+    document.getElementById('copyButton').addEventListener('click', function() {
+        const inputText = document.getElementById('inputText');
+        inputText.select();
+        document.execCommand('copy');
+        alert("Text copied to clipboard!");
+    });
+</script>
+
 </body>
 </html>
